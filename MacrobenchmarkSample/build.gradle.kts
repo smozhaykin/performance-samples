@@ -14,10 +14,31 @@
  * limitations under the License.
  */
 
+import com.android.build.gradle.BaseExtension
+
 plugins {
     alias(libs.plugins.application) apply false
     alias(libs.plugins.library) apply false
     alias(libs.plugins.test) apply false
     alias(libs.plugins.kotlin) apply false
     alias(libs.plugins.baselineprofile) apply false
+    alias(libs.plugins.kotlin.kover)
+}
+
+subprojects {
+    afterEvaluate {
+        configureAndroid()
+    }
+}
+
+fun Project.configureAndroid() {
+    (project.extensions.findByName("android") as? BaseExtension)?.run {
+        plugins.apply(rootProject.libs.plugins.kotlin.kover.get().pluginId)
+        koverReport {
+            defaults {
+                mergeWith("debug")
+            }
+        }
+        rootProject.dependencies.kover(project)
+    }
 }
